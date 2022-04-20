@@ -13,7 +13,11 @@ MonoBehaviour:
   m_Name: OrsiSemanticSegmentationLabelConfig
   m_EditorClassIdentifier: 
   m_LabelEntries:
-  - label: pinza_piccola_bones_constraints_L
+  - label: LargeNeedleDriver_L
     color: {r: 0, g: 0, b: 1, a: 1}
-  - label: pinza_piccola_bones_constraints_R
-    color: {r: 0, g: 0.47199154, b: 1, a: 1}
+  - label: LargeNeedleDriver_R
+    color: {r: 0, g: 0.47058827, b: 1, a: 1}
+  - label: ORSI_Needle_01
+    color: {r: 0.0027144956, g: 0.5754717, b: 0.0027144956, a: 1}
+  - label: ORSI_Needle_02
+    color: {r: 0, g: 1, b: 0, a: 1}

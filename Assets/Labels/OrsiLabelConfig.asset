@@ -13,9 +13,13 @@ MonoBehaviour:
   m_Name: OrsiLabelConfig
   m_EditorClassIdentifier: 
   m_LabelEntries:
-  - label: pinza_piccola_bones_constraints_L
+  - label: LargeNeedleDriver_L
     id: 1
-  - label: pinza_piccola_bones_constraints_R
+  - label: LargeNeedleDriver_R
     id: 2
+  - label: ORSI_Needle_01
+    id: 3
+  - label: ORSI_Needle_02
+    id: 4
   autoAssignIds: 1
   startingLabelId: 1

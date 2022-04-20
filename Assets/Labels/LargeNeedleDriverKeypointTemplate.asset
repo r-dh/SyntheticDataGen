@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37a7d6f1a40c45a2981a6291f0d03337, type: 3}
+  m_Name: LargeNeedleDriverKeypointTemplate
+  m_EditorClassIdentifier: 
+  templateID: 80162a53-380e-4ce5-95ff-62c5e8a77be2
+  templateName: Large Needle Driver
+  jointTexture: {fileID: 2800000, guid: e381cbaaf29614168bafc8f7ec5dbfe9, type: 3}
+  skeletonTexture: {fileID: 2800000, guid: e381cbaaf29614168bafc8f7ec5dbfe9, type: 3}
+  keypoints:
+  - label: Base
+    associateToRig: 0
+    rigLabel: 0
+    color: {r: 0, g: 0, b: 1, a: 1}
+  - label: Swivel
+    associateToRig: 0
+    rigLabel: 0
+    color: {r: 1, g: 0.5058824, b: 0, a: 1}
+  - label: Grip_top
+    associateToRig: 0
+    rigLabel: 0
+    color: {r: 1, g: 0, b: 0.08437061, a: 1}
+  - label: Grip_bot
+    associateToRig: 0
+    rigLabel: 0
+    color: {r: 0.17849922, g: 1, b: 0, a: 1}
+  - label: _Joint_1_axis1
+    associateToRig: 0
+    rigLabel: 0
+    color: {r: 0.5768442, g: 0, b: 1, a: 1}
+  - label: _Joint_1_axis2
+    associateToRig: 0
+    rigLabel: 0
+    color: {r: 0.5803922, g: 0, b: 1, a: 1}
+  - label: _Joint_2_axis1
+    associateToRig: 0
+    rigLabel: 0
+    color: {r: 1, g: 0, b: 0.654902, a: 1}
+  - label: _Joint_2_axis2
+    associateToRig: 0
+    rigLabel: 0
+    color: {r: 1, g: 0, b: 0.654902, a: 1}
+  skeleton: []
