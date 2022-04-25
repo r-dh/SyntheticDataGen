@@ -71,6 +71,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
         private UniformSampler uniformSampler;
 
         private List<Vector3> rotationList = new List<Vector3>();
+        private List<GameObject> tools = new List<GameObject>();
         /// <inheritdoc/>
         protected override void OnAwake()
         {
@@ -83,7 +84,10 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                     element => element.Item1).ToArray());
         }
 
-        private void PlaceInstruments(ref NativeList<float2> placementSamples)
+        /// <summary>
+        /// Select most extreme points out of a list.
+        /// </summary>
+        private (float2 left, float2 right) GenerateLocationsInstruments(ref NativeList<float2> placementSamples)
         {
             // We expect only two instruments, so we keep the leftmost and rightmost point
             if (prefabs.GetCategoryCount() != 2)
@@ -92,8 +96,8 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                     "TWO instruments are expected at the same time");
             }
 
-            float2 min = new float2(0, 0);
-            float2 max = new float2(0, 0);
+            float2 min = new float2(placementSamples[0].x, placementSamples[0].y);
+            float2 max = new float2(placementSamples[0].x, placementSamples[0].y);
 
             for (int i = 0; i < placementSamples.Length; i++)
             {
@@ -101,68 +105,70 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 if (max.x < placementSamples[i].x) max = placementSamples[i];
             }
 
-            placementSamples[0] = min;
-            placementSamples[1] = max;
+            return (min, max);
         }
 
-        private void RotateInstruments(ref NativeList<float2> placementSamples, Vector3 offset)
+        private void PlaceAndRotateInstruments(float2 left, float2 right, Vector3 offset)
         {
             var rotationSampler = new UniformSampler(0, 360);
 
             for (int i = 0; i < prefabs.GetCategoryCount(); i++)
             {
-                // TODO: check if rotation is uniform
+                float2 sample = (i == 0) ? left : right;
 
-                float2 sample = placementSamples[i];
                 var instance = m_GameObjectOneWayCache.GetOrInstantiate(
                     prefabs.GetCategory(i));
                 instance.transform.localPosition = new Vector3(
                     sample.x, sample.y, depth) + offset;
 
-                // Rotate the first hinge randomly between 0 - 360 on the x-axis
+                tools.Add(instance);
+
+                // TODO(low): check if rotation is truly uniform
+                // Rotate the first hinge randomly between 0° - 360° on the x-axis
                 float x = rotationSampler.Sample();
                 rotationList.Add(new Vector3(x, 0, 0));
-
-                string pathHinge01 = "ORSI_LND_04/B_Root/B_Stick_01/B_Hinge_01";
-                instance.transform.Find(pathHinge01).Rotate(rotationList[0]);
-
-                // Rotate the second hinge randomly between -90 - 90 on the z-axis
+                
+                // Rotate the second hinge randomly between -80° - 80° on the z-axis
                 var rotation = rotationSampler.Sample();
-                rotationList.Add(new Vector3(0, 0, (rotation % 180) - 90));
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02").Rotate(rotationList[1]);  //(rotation % 180) - 90
+                rotationList.Add(new Vector3(0, 0, (rotation % 160) - 80));
 
-
-                // Rotate the first driver (tip) randomly between -90 - 90 on the z-axis
+                // Rotate the first driver (tip) randomly between -90° - 90° on the z-axis
                 rotation = rotationSampler.Sample();
-                var tip1 = (rotation - 180) % 35; //90
+                var tip1 = (rotation - 180) % 90;
                 rotationList.Add(new Vector3(0, 0, tip1));
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_01").Rotate(rotationList[2]);
 
-                // Rotate the second driver (tip) randomly between the first driver - 90 on the z-axis
-
-                //if tip1 == -30: tip2 in { -30, -90 }
-                // TODO: Check if creating a new sampler doesn't generate the same values as the previous one
-                var tip2 = new UniformSampler(-35, tip1).Sample();
+                // Rotate the second driver (tip) randomly between -90° and the first driver (inverted) on the z-axis
+                var tip2 = new UniformSampler(-90, tip1 * -1f).Sample();
                 rotationList.Add(new Vector3(0, 0, tip2));
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_02").Rotate(rotationList[3]);
+                
+                string pathHinge01 = "ORSI_LND_04/B_Root/B_Stick_01/B_Hinge_01";
+                instance.transform.Find(pathHinge01).Rotate(rotationList[0 + i * 4]);
+                instance.transform.Find(pathHinge01 + "/B_Hinge_02").Rotate(rotationList[1 + i * 4]);  //(rotation % 180) - 90
+                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_01").Rotate(rotationList[2 + i * 4]);
+                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_02").Rotate(rotationList[3 + i * 4]);
+                
             }
         }
-
+        /// <summary>
+        /// Resets the various components to their original rotations
+        /// </summary>
         private void RevertRotationInstruments()
         {
-
-            for (int i = 0; i < prefabs.GetCategoryCount(); i++)
+            for (int i = 0; i < tools.Count(); i++)
             {
-                var instance = m_GameObjectOneWayCache.GetOrInstantiate(
-                    prefabs.GetCategory(i));
+                var instance = tools[i];
 
                 string pathHinge01 = "ORSI_LND_04/B_Root/B_Stick_01/B_Hinge_01";
-                instance.transform.Find(pathHinge01).Rotate(rotationList[0] * -1);
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02").Rotate(rotationList[1] * -1);
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_01").Rotate(rotationList[2] * -1);
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_02").Rotate(rotationList[3] * -1);
+                instance.transform.Find(pathHinge01).Rotate(rotationList[0 + i*4] * -1);
+                instance.transform.Find(pathHinge01 + "/B_Hinge_02").Rotate(rotationList[1 + i * 4] * -1);
+                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_01").Rotate(rotationList[2 + i * 4] * -1);
+                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_02").Rotate(rotationList[3 + i * 4] * -1);
             }
+
+            tools.Clear();
+            rotationList.Clear();
         }
+
         /// <summary>
         /// Generates two instruments in the foreground layer at the start of each scenario iteration
         /// </summary>
@@ -179,9 +185,9 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
             var offset = new Vector3(placementArea.x, placementArea.y, 0f) * -0.5f;
             offset.z = uniformSampler.Sample() * -1f;
 
-            PlaceInstruments(ref placementSamples);
+            var (left, right) = GenerateLocationsInstruments(ref placementSamples);
 
-            RotateInstruments(ref placementSamples, offset);
+            PlaceAndRotateInstruments(left, right, offset);
 
             placementSamples.Dispose();
         }
@@ -191,10 +197,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
         /// </summary>
         protected override void OnIterationEnd()
         {
-            // TODO(unsuspected behaviour): Rotations are NOT being reverted
             RevertRotationInstruments();
-
-            rotationList.Clear();
 
             m_GameObjectOneWayCache.ResetAllObjects();
         }

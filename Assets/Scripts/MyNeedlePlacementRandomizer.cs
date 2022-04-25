@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using NUnit.Framework;
 using Unity.Collections;
 using Unity.Mathematics;
+using UnityEditor.Experimental.SceneManagement;
 using UnityEngine.Perception.Randomization.Parameters;
 using UnityEngine.Perception.Randomization.Randomizers.Utilities;
 using UnityEngine.Perception.Randomization.Samplers;
@@ -42,7 +44,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
         /// The list of instruments to place
         /// </summary>
         [Tooltip("The needle to be placed by this Randomizer.")]
-        public GameObjectParameter prefab;
+        public GameObjectParameter prefabs;
 
         /// <summary>
         /// The list of prefabs sample and randomly place
@@ -59,17 +61,38 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
         GameObject m_Container;
         GameObjectOneWayCache m_GameObjectOneWayCache;
 
-        //private UniformSampler uniformSampler;
+        private UniformSampler uniformSampler;
         /// <inheritdoc/>
         protected override void OnAwake()
         {
-            //uniformSampler = new UniformSampler(0.0f, depthVariation);
+            uniformSampler = new UniformSampler(0.0f, depthVariation);
 
             m_Container = new GameObject("Needles");
             m_Container.transform.parent = scenario.transform;
             m_GameObjectOneWayCache = new GameObjectOneWayCache(
-                m_Container.transform, prefab.categories.Select(
+                m_Container.transform, prefabs.categories.Select(
                     element => element.Item1).ToArray());
+        }
+
+        private (float2 left, float2 right) GenerateLocationsNeedles(ref NativeList<float2> placementSamples)
+        {
+            // We expect only two instruments, so we keep the leftmost and rightmost point
+            if (prefabs.GetCategoryCount() != 2)
+            {
+                throw new NotImplementedException(
+                    "Expected exactly TWO needles");
+            }
+
+            float2 min = new float2(placementSamples[0].x, placementSamples[0].y);
+            float2 max = new float2(placementSamples[0].x, placementSamples[0].y);
+
+            for (int i = 0; i < placementSamples.Length; i++)
+            {
+                if (min.x > placementSamples[i].x) min = placementSamples[i];
+                if (max.x < placementSamples[i].x) max = placementSamples[i];
+            }
+
+            return (min, max);
         }
 
         /// <summary>
@@ -86,13 +109,21 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 30);
 
             var offset = new Vector3(placementArea.x, placementArea.y, 0f) * -0.5f;
-           // offset.z = uniformSampler.Sample() * -1f;
+            offset.z = uniformSampler.Sample() * -1f;
+
+            // ON HOLD: sort generated samples by x coordinate, split resulting list in needleCount parts and sample each location from the resulting partial lists
+            // ON HOLD: (Perception v0.8) This gives an error, GetEnumerator() hasn't been implemented by NativeList
+            /*var samplesSplit = placementSamples.Select((x, i) => new {value = x, index = i})
+                .GroupBy(x => x.index / (placementSamples.Length / prefab.GetCategoryCount()))
+                .Select(x => x.Select(z => z.value));*/
+
+            var (left, right) = GenerateLocationsNeedles(ref placementSamples);
 
             for (int i = 0; i < needleCount; i++)
             {
-                float2 sample = placementSamples[i];
+                float2 sample = (i == 0) ? left : right; // Warning: This only works for two needles
                 var instance = m_GameObjectOneWayCache.GetOrInstantiate(
-                    prefab.GetCategory(i));
+                    prefabs.GetCategory(i));
                 instance.transform.localPosition = new Vector3(
                     sample.x, sample.y, depth) + offset;
             }
