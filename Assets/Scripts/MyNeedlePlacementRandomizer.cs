@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using NUnit.Framework;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEditor.Experimental.SceneManagement;
@@ -71,7 +70,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
             m_Container.transform.parent = scenario.transform;
             m_GameObjectOneWayCache = new GameObjectOneWayCache(
                 m_Container.transform, prefabs.categories.Select(
-                    element => element.Item1).ToArray());
+                    element => element.Item1).ToArray(), this);
         }
 
         private (float2 left, float2 right) GenerateLocationsNeedles(ref NativeList<float2> placementSamples)

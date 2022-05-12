@@ -405,11 +405,9 @@ MonoBehaviour:
   - id: 1
   - id: 2
   - id: 3
-  - id: 4
-  - id: 5
-  - id: 6
+  ID: camera
   description: Synthetic endoscopy content generator for Surgical Analytics AI research
-  captureRgbImages: 1
+  captureRgbImages: 0
   firstCaptureFrame: 0
   captureTriggerMode: 0
   manualSensorAffectSimulationTiming: 0
@@ -419,56 +417,36 @@ MonoBehaviour:
   references:
     version: 1
     00000000:
-      type: {class: BoundingBox2DLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Unity.Perception.Runtime}
-      data:
-        enabled: 1
-        annotationId: f9f22e05-443f-4602-a422-ebe4ea9b55cb
-        idLabelConfig: {fileID: 11400000, guid: cf6ae716be4e61b4688239a1992dde5e, type: 2}
-    00000001:
-      type: {class: BoundingBox3DLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Unity.Perception.Runtime}
-      data:
-        enabled: 0
-        annotationId: 0bfbe00d-00fa-4555-88d1-471b58449f5c
-        idLabelConfig: {fileID: 11400000, guid: cf6ae716be4e61b4688239a1992dde5e, type: 2}
-        visualizationColor: {r: 0, g: 1, b: 0, a: 1}
-    00000002:
-      type: {class: ObjectCountLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Unity.Perception.Runtime}
-      data:
-        enabled: 0
-        objectCountMetricId: 51da3c27-369d-4929-aea6-d01614635ce2
-        m_LabelConfig: {fileID: 11400000, guid: cf6ae716be4e61b4688239a1992dde5e, type: 2}
-    00000003:
-      type: {class: RenderedObjectInfoLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Unity.Perception.Runtime}
-      data:
-        enabled: 1
-        objectInfoMetricId: 5ba92024-b3b7-41a7-9d3f-c03a6a8ddd01
-        idLabelConfig: {fileID: 11400000, guid: cf6ae716be4e61b4688239a1992dde5e, type: 2}
-    00000004:
       type: {class: SemanticSegmentationLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Unity.Perception.Runtime}
       data:
         enabled: 1
-        annotationId: 12f94d8d-5425-4deb-9b21-5e53ad957d66
+        annotationId: semantic segmentation
         labelConfig: {fileID: 11400000, guid: eea793393b6cd664bbedbbc2cfc8fe5f, type: 2}
         m_TargetTextureOverride: {fileID: 0}
-    00000005:
+    00000001:
       type: {class: KeypointLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Unity.Perception.Runtime}
       data:
         enabled: 1
-        activeTemplate: {fileID: 11400000, guid: 708b2d923627c014888798e93da23411, type: 2}
-        annotationId: 8b3ef246-daa7-4dd5-a0e8-a943f6e7f8c2
-        idLabelConfig: {fileID: 11400000, guid: cf6ae716be4e61b4688239a1992dde5e, type: 2}
-        objectFilter: 1
-        animationPoseConfigs:
-        - {fileID: 0}
-    00000006:
-      type: {class: Keypoint3DLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Assembly-CSharp}
-      data:
-        enabled: 1
-        activeTemplate: {fileID: 11400000, guid: 708b2d923627c014888798e93da23411, type: 2}
-        annotationId: f43d92a4-f6b4-4af3-9214-ea2054efa430
+        activeTemplate: {fileID: 11400000, guid: a097a3afbad93c4498e2f8ce3c19795c, type: 2}
+        annotationId: keypoints
         idLabelConfig: {fileID: 11400000, guid: cf6ae716be4e61b4688239a1992dde5e, type: 2}
         objectFilter: 0
         animationPoseConfigs: []
+    00000002:
+      type: {class: KeypointLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Unity.Perception.Runtime}
+      data:
+        enabled: 1
+        activeTemplate: {fileID: 11400000, guid: b25d6a42196e46b47a6e070cb9d64120, type: 2}
+        annotationId: keypoints_needles
+        idLabelConfig: {fileID: 11400000, guid: cf6ae716be4e61b4688239a1992dde5e, type: 2}
+        objectFilter: 0
+        animationPoseConfigs: []
+    00000003:
+      type: {class: GripAngleLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Assembly-CSharp}
+      data:
+        enabled: 1
+        annotationId: grip_angle_labeler
+        maxAngleDegrees: 5
 --- !u!114 &74019740
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -491,6 +469,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 63
   m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
   m_Antialiasing: 1
   m_AntialiasingQuality: 2
@@ -987,6 +966,67 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &360063761
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2782352069492114800, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_Name
+      value: LargeNeedleDriver_L
+      objectReference: {fileID: 0}
+    - target: {fileID: 2782352069492114800, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392403098257146493, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_RootOrder
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392403098257146493, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -10.403046
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392403098257146493, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -6.5587425
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392403098257146493, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 34.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392403098257146493, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.3459367
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392403098257146493, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.35538492
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392403098257146493, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.6425681
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392403098257146493, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.5840681
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392403098257146493, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 94.80301
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392403098257146493, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -20.583984
+      objectReference: {fileID: 0}
+    - target: {fileID: 8392403098257146493, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -141.067
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
 --- !u!4 &381025030 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2497988807776053141, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
@@ -1265,12 +1305,16 @@ MonoBehaviour:
   - id: 6
   - id: 7
   - id: 8
+  configuration: {fileID: 0}
   constants:
-    randomSeed: 538664221
+    randomSeed: 538664224
+    startIteration: 0
+    iterationCount: 4
+    framesPerIteration: 1000
     totalIterations: 10
     instanceCount: 1
     instanceIndex: 0
-    framesPerIteration: 1
+  m_ProgressPercentage: 0
   references:
     version: 1
     00000000:
@@ -1278,6 +1322,7 @@ MonoBehaviour:
       data:
         m_Enabled: 1
         collapsed: 0
+        <enabledStateCanBeSwitchedByUser>k__BackingField: 1
         Background: {fileID: 4244053}
         Sprites:
           collapsed: 0
@@ -2025,15 +2070,16 @@ MonoBehaviour:
       data:
         m_Enabled: 1
         collapsed: 0
-        depth: 65
-        depthVariation: 30
+        <enabledStateCanBeSwitchedByUser>k__BackingField: 1
+        depth: 45
+        depthVariation: 20
         separationDistance: 12
         placementArea: {x: 40, y: 30}
         prefabs:
           collapsed: 0
           probabilities:
-          - 0.33333334
-          - 0.33333334
+          - 0.5
+          - 0.5
           uniform: 1
           m_Sampler:
             id: 10
@@ -2047,7 +2093,8 @@ MonoBehaviour:
       data:
         m_Enabled: 1
         collapsed: 0
-        depth: 75
+        <enabledStateCanBeSwitchedByUser>k__BackingField: 1
+        depth: 65
         depthVariation: 20
         separationDistance: 15
         placementArea: {x: 50, y: 40}
@@ -2069,6 +2116,7 @@ MonoBehaviour:
       data:
         m_Enabled: 1
         collapsed: 0
+        <enabledStateCanBeSwitchedByUser>k__BackingField: 1
         rotation:
           collapsed: 0
           x:
@@ -2082,6 +2130,7 @@ MonoBehaviour:
       data:
         m_Enabled: 1
         collapsed: 0
+        <enabledStateCanBeSwitchedByUser>k__BackingField: 1
         rotation:
           collapsed: 0
           x:
@@ -2095,6 +2144,7 @@ MonoBehaviour:
       data:
         m_Enabled: 1
         collapsed: 0
+        <enabledStateCanBeSwitchedByUser>k__BackingField: 1
         lightIntensityParameter:
           collapsed: 0
           value:
@@ -2104,6 +2154,7 @@ MonoBehaviour:
       data:
         m_Enabled: 0
         collapsed: 1
+        <enabledStateCanBeSwitchedByUser>k__BackingField: 1
         texture:
           collapsed: 0
           probabilities:
@@ -2120,6 +2171,7 @@ MonoBehaviour:
       data:
         m_Enabled: 0
         collapsed: 1
+        <enabledStateCanBeSwitchedByUser>k__BackingField: 1
         hueOffset:
           collapsed: 0
           value:
@@ -2129,6 +2181,7 @@ MonoBehaviour:
       data:
         m_Enabled: 0
         collapsed: 1
+        <enabledStateCanBeSwitchedByUser>k__BackingField: 1
         pitchParameter:
           collapsed: 0
           value:
@@ -2139,72 +2192,108 @@ MonoBehaviour:
         range:
           minimum: 0
           maximum: 1
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     0000000A:
       type: {class: UniformSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
         range:
           minimum: 0
           maximum: 1
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     0000000B:
       type: {class: UniformSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
         range:
           minimum: 0
           maximum: 1
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     0000000C:
       type: {class: UniformSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
         range:
           minimum: 0
           maximum: 360
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     0000000D:
       type: {class: UniformSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
         range:
           minimum: 0
           maximum: 5
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     0000000E:
       type: {class: UniformSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
         range:
           minimum: -10
           maximum: 10
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     0000000F:
       type: {class: UniformSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
         range:
           minimum: 0
           maximum: 360
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     00000010:
       type: {class: UniformSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
         range:
           minimum: 0
           maximum: 360
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     00000011:
       type: {class: UniformSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
         range:
           minimum: 0
           maximum: 360
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     00000012:
       type: {class: UniformSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
         range:
           minimum: 0
           maximum: 1
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     00000013:
       type: {class: UniformSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
         range:
           minimum: 0
           maximum: 1
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     00000014:
       type: {class: UniformSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
         range:
           minimum: -180
           maximum: 180
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
     00000015:
       type: {class: NormalSampler, ns: UnityEngine.Perception.Randomization.Samplers, asm: Unity.Perception.Runtime}
       data:
@@ -2213,6 +2302,9 @@ MonoBehaviour:
         range:
           minimum: -0.5
           maximum: 0.5
+        <minAllowed>k__BackingField: 0
+        <maxAllowed>k__BackingField: 0
+        <shouldCheckValidRange>k__BackingField: 0
 --- !u!4 &860879363
 Transform:
   m_ObjectHideFlags: 0
@@ -3194,6 +3286,58 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2497988806147770873, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
   m_PrefabInstance: {fileID: 2497988807481187475}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1884362392
+GameObject:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1884362394}
+  - component: {fileID: 1884362393}
+  m_Layer: 0
+  m_Name: _PerceptionSettings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1884362393
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884362392}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5ee903ff896bde4bb82aed4aec2bf61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  endpoint:
+    id: 0
+  references:
+    version: 1
+    00000000:
+      type: {class: PerceptionEndpoint, ns: UnityEngine.Perception.GroundTruth.Consumers, asm: Unity.Perception.Runtime}
+      data:
+        capturesPerFile: 150
+        metricsPerFile: 150
+--- !u!4 &1884362394
+Transform:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1884362392}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 14
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1920686259
 GameObject:
   m_ObjectHideFlags: 0
@@ -3818,6 +3962,67 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 65995fe5e03a9ae449e81e7517e8b4e9, type: 3}
+--- !u!1001 &3550359924090613113
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1653510041115878284, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_Name
+      value: LargeNeedleDriver_R
+      objectReference: {fileID: 0}
+    - target: {fileID: 1653510041115878284, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5646553183662825909, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_RootOrder
+      value: 17
+      objectReference: {fileID: 0}
+    - target: {fileID: 5646553183662825909, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 17.939283
+      objectReference: {fileID: 0}
+    - target: {fileID: 5646553183662825909, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -6.4213467
+      objectReference: {fileID: 0}
+    - target: {fileID: 5646553183662825909, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 40.100464
+      objectReference: {fileID: 0}
+    - target: {fileID: 5646553183662825909, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.52668697
+      objectReference: {fileID: 0}
+    - target: {fileID: 5646553183662825909, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.58128846
+      objectReference: {fileID: 0}
+    - target: {fileID: 5646553183662825909, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.4919737
+      objectReference: {fileID: 0}
+    - target: {fileID: 5646553183662825909, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.37771228
+      objectReference: {fileID: 0}
+    - target: {fileID: 5646553183662825909, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 100.274994
+      objectReference: {fileID: 0}
+    - target: {fileID: 5646553183662825909, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -26.32898
+      objectReference: {fileID: 0}
+    - target: {fileID: 5646553183662825909, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -102.58801
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: bdb42e2d5c06a684b8a829271ff1a83f, type: 3}
 --- !u!1001 &3946002754235491503
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4009,6 +4214,67 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3999086ba40d7d1438cab3a03167c035, type: 3}
+--- !u!1001 &5312724581506429018
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2318170489605188198, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_RootOrder
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 2318170489605188198, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -10.403046
+      objectReference: {fileID: 0}
+    - target: {fileID: 2318170489605188198, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -6.5587425
+      objectReference: {fileID: 0}
+    - target: {fileID: 2318170489605188198, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 34.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2318170489605188198, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.3459367
+      objectReference: {fileID: 0}
+    - target: {fileID: 2318170489605188198, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.35538495
+      objectReference: {fileID: 0}
+    - target: {fileID: 2318170489605188198, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.6425681
+      objectReference: {fileID: 0}
+    - target: {fileID: 2318170489605188198, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.5840682
+      objectReference: {fileID: 0}
+    - target: {fileID: 2318170489605188198, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2318170489605188198, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2318170489605188198, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2351188789732379365, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_Name
+      value: ORSI_FBF_Lo_01
+      objectReference: {fileID: 0}
+    - target: {fileID: 2351188789732379365, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1ee0e804a4511974a92fc95410c05878, type: 3}
 --- !u!1001 &6105765441935625658
 PrefabInstance:
   m_ObjectHideFlags: 0

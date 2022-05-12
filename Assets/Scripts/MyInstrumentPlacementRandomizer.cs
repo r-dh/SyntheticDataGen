@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
 using Unity.Collections;
 using Unity.Mathematics;
+using UnityEditor;
+using UnityEngine;
 using UnityEngine.Perception.Randomization.Parameters;
 using UnityEngine.Perception.Randomization.Randomizers.Utilities;
 using UnityEngine.Perception.Randomization.Samplers;
@@ -71,7 +72,10 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
         private UniformSampler uniformSampler;
 
         private List<Vector3> rotationList = new List<Vector3>();
+        private List<Quaternion> initialRotations = new List<Quaternion>();
+        private List<PermanentRotation> animatedRotations = new List<PermanentRotation>();
         private List<GameObject> tools = new List<GameObject>();
+
         /// <inheritdoc/>
         protected override void OnAwake()
         {
@@ -81,7 +85,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
             m_Container.transform.parent = scenario.transform;
             m_GameObjectOneWayCache = new GameObjectOneWayCache(
                 m_Container.transform, prefabs.categories.Select(
-                    element => element.Item1).ToArray());
+                    element => element.Item1).ToArray(), this);
         }
 
         /// <summary>
@@ -127,10 +131,10 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 // Rotate the first hinge randomly between 0° - 360° on the x-axis
                 float x = rotationSampler.Sample();
                 rotationList.Add(new Vector3(x, 0, 0));
-                
+
                 // Rotate the second hinge randomly between -80° - 80° on the z-axis
                 var rotation = rotationSampler.Sample();
-                rotationList.Add(new Vector3(0, 0, (rotation % 160) - 80));
+                rotationList.Add(new Vector3(0, 0, (rotation % 160) - 80)); //(rotation % 180) - 90
 
                 // Rotate the first driver (tip) randomly between -90° - 90° on the z-axis
                 rotation = rotationSampler.Sample();
@@ -140,15 +144,50 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 // Rotate the second driver (tip) randomly between -90° and the first driver (inverted) on the z-axis
                 var tip2 = new UniformSampler(-90, tip1 * -1f).Sample();
                 rotationList.Add(new Vector3(0, 0, tip2));
-                
-                string pathHinge01 = "ORSI_LND_04/B_Root/B_Stick_01/B_Hinge_01";
-                instance.transform.Find(pathHinge01).Rotate(rotationList[0 + i * 4]);
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02").Rotate(rotationList[1 + i * 4]);  //(rotation % 180) - 90
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_01").Rotate(rotationList[2 + i * 4]);
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_02").Rotate(rotationList[3 + i * 4]);
-                
+
+                NormalSampler nsSpeed = new NormalSampler(1, 40, 25, 0.5f);
+
+                string pathHinge01 = "ORSI_LND_04/B_Root/B_Shaft_01/B_Hinge_01";
+                var hinge01 = instance.transform.Find(pathHinge01);
+                initialRotations.Add(hinge01.localRotation);
+                hinge01.Rotate(rotationList[0 + i * 4]);
+                var prh01 = hinge01.gameObject.AddComponent<PermanentRotation>();
+                prh01.InitPermanentRotation(0f, Vector3.right);
+                animatedRotations.Add(prh01);
+
+                var hinge02 = instance.transform.Find(pathHinge01 + "/B_Hinge_02");
+                initialRotations.Add(hinge02.localRotation);
+                hinge02.Rotate(rotationList[1 + i * 4]);
+                var prh02 = hinge02.gameObject.AddComponent<PermanentRotation>();
+                float currentPos = rotationList[1 + i * 4].z;
+
+                prh02.InitPermanentRotation(currentPos, Vector3.forward, nsSpeed.Sample(), -80f, 80f, true);
+                animatedRotations.Add(prh02);
+                // TODO: Randomly choose between forward/backward and then calculate maxangle
+                // TODO: randomly choose true/false for flip axis
+                NormalSampler nsMinAngle = new NormalSampler(-90f, tip1, (-90f + tip1)/2, 1f, true, -90f, tip1);
+
+                var driver01 = instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_01");
+                initialRotations.Add(driver01.localRotation);
+                driver01.Rotate(rotationList[2 + i * 4]);
+                var prd01 = driver01.gameObject.AddComponent<PermanentRotation>();
+                //TODO: This is probably riddled with unwanted behaviour
+                //TODO: decide on centerpoint
+                float centerpoint = (tip1 - tip2) / 2;
+                prd01.InitPermanentRotation(tip1, Vector3.forward, nsSpeed.Sample(), nsMinAngle.Sample(), centerpoint, true);
+                animatedRotations.Add(prd01);
+
+                var driver02 = instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_02");
+                initialRotations.Add(driver02.localRotation);
+                driver02.Rotate(rotationList[3 + i * 4]);
+                var prd02 = driver02.gameObject.AddComponent<PermanentRotation>();
+                //TODO: This is probably riddled with unwanted behaviour
+                prd02.InitPermanentRotation(tip2, Vector3.forward, nsSpeed.Sample(), -90f, -centerpoint, true);
+                animatedRotations.Add(prd02);
+
             }
         }
+
         /// <summary>
         /// Resets the various components to their original rotations
         /// </summary>
@@ -158,15 +197,16 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
             {
                 var instance = tools[i];
 
-                string pathHinge01 = "ORSI_LND_04/B_Root/B_Stick_01/B_Hinge_01";
-                instance.transform.Find(pathHinge01).Rotate(rotationList[0 + i*4] * -1);
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02").Rotate(rotationList[1 + i * 4] * -1);
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_01").Rotate(rotationList[2 + i * 4] * -1);
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_02").Rotate(rotationList[3 + i * 4] * -1);
+                string pathHinge01 = "ORSI_LND_04/B_Root/B_Shaft_01/B_Hinge_01";
+                instance.transform.Find(pathHinge01).localRotation = initialRotations[0 + i * 4];
+                instance.transform.Find(pathHinge01 + "/B_Hinge_02").localRotation = initialRotations[1 + i * 4];
+                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_01").localRotation = initialRotations[2 + i * 4];
+                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_02").localRotation = initialRotations[3 + i * 4];
             }
 
             tools.Clear();
             rotationList.Clear();
+            initialRotations.Clear();
         }
 
         /// <summary>
@@ -198,7 +238,11 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
         protected override void OnIterationEnd()
         {
             RevertRotationInstruments();
-
+            foreach (var permanentRotation in animatedRotations)
+            {
+                Object.Destroy(permanentRotation);
+            }
+            animatedRotations.Clear();
             m_GameObjectOneWayCache.ResetAllObjects();
         }
     }
