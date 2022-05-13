@@ -17,8 +17,6 @@ public class PermanentRotation : MonoBehaviour
     public Vector3 Axis = Vector3.right;
     public bool FlipAxis = false;
     private float _duration = 0f;
-    //private bool _forwardRotation = true;
-    //private float _initialAngle = 0f;
     private float _currentAngle = 0f;
     private float _cooldown = 0f;
     private float velocity = 0f;
@@ -44,9 +42,6 @@ public class PermanentRotation : MonoBehaviour
         _currentAngle = currentAngle;
         _nsSpeed = new NormalSampler(0.1f, 1.5f, 1f, 0.5f);
         velocity = DefaultSpeed * _nsSpeed.Sample();
-        //_forwardRotation = (UnityEngine.Random.value < 0.5f);
-        //_initialAngle = GetCurrentAngle();
-
     }
 
     public void ResetTimer()
@@ -57,7 +52,6 @@ public class PermanentRotation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //TODO: Random breaks and flipped rotations
         _duration += Time.deltaTime;
         _cooldown -= Time.deltaTime;
 
@@ -75,7 +69,6 @@ public class PermanentRotation : MonoBehaviour
         if (_duration > Delay && _duration < MaxDuration)
         {
             float angle = velocity * Time.deltaTime;
-            //float current_angle = GetCurrentAngle();
             float nextAngle = _currentAngle + angle;
 
             if (nextAngle >= MaxAngle || nextAngle <= MinAngle)
@@ -86,7 +79,6 @@ public class PermanentRotation : MonoBehaviour
 
             GetComponent<Transform>().Rotate(Axis, angle);
             _currentAngle += angle;
-
         }
     }
 }

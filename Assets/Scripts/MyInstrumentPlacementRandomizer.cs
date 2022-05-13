@@ -125,6 +125,10 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 instance.transform.localPosition = new Vector3(
                     sample.x, sample.y, depth) + offset;
 
+                RandomMovement rm = instance.AddComponent<RandomMovement>();
+                float min = Math.Min(sample.x * 0.9f, sample.x * 1.1f) + offset.x;
+                float max = Math.Max(sample.x * 0.9f, sample.x * 1.1f) + offset.x;
+                rm.Init(new float2(min, max), new float2(-15f, 15f));
                 tools.Add(instance);
 
                 // TODO(low): check if rotation is truly uniform
