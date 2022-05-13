@@ -63,3 +63,6 @@ crashlytics-build.properties
 
 # ignore viking village scen files that are too large
 [Aa]ssets/[Vv]iking/[Ss]cenes/*
+
+# ignore git submodule
+com.unity.perception-Release-0.11.2-preview.2
