@@ -405,6 +405,7 @@ MonoBehaviour:
   - id: 1
   - id: 2
   - id: 3
+  - id: 4
   ID: camera
   description: Synthetic endoscopy content generator for Surgical Analytics AI research
   captureRgbImages: 0
@@ -430,7 +431,7 @@ MonoBehaviour:
         activeTemplate: {fileID: 11400000, guid: a097a3afbad93c4498e2f8ce3c19795c, type: 2}
         annotationId: keypoints
         idLabelConfig: {fileID: 11400000, guid: cf6ae716be4e61b4688239a1992dde5e, type: 2}
-        objectFilter: 0
+        objectFilter: 2
         animationPoseConfigs: []
     00000002:
       type: {class: KeypointLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Unity.Perception.Runtime}
@@ -439,9 +440,14 @@ MonoBehaviour:
         activeTemplate: {fileID: 11400000, guid: b25d6a42196e46b47a6e070cb9d64120, type: 2}
         annotationId: keypoints_needles
         idLabelConfig: {fileID: 11400000, guid: cf6ae716be4e61b4688239a1992dde5e, type: 2}
-        objectFilter: 0
+        objectFilter: 2
         animationPoseConfigs: []
     00000003:
+      type: {class: Keypoint3DLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Assembly-CSharp}
+      data:
+        enabled: 1
+        annotationId: keypoint3d_labeler
+    00000004:
       type: {class: GripAngleLabeler, ns: UnityEngine.Perception.GroundTruth, asm: Assembly-CSharp}
       data:
         enabled: 1
@@ -1310,7 +1316,7 @@ MonoBehaviour:
     randomSeed: 538664224
     startIteration: 0
     iterationCount: 4
-    framesPerIteration: 1000
+    framesPerIteration: 100
     totalIterations: 10
     instanceCount: 1
     instanceIndex: 0
