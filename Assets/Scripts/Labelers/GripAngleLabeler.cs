@@ -12,17 +12,12 @@ namespace UnityEngine.Perception.GroundTruth
         public override string description => "Grip angle labeler";
 
         public override string labelerId => annotationId;
-        
+
         protected override bool supportsVisualization => false;
 
         public string annotationId = "grip_angle_labeler";
         public float maxAngleDegrees = 5;
 
-        MetricDefinition angleTopMetricDefinition;
-        MetricDefinition angleBotMetricDefinition;
-        MetricDefinition gripClosedMetricDefinition;
-
-        // We will use this in future versions of perception
         private AnnotationDefinition gripAngleDef;
 
         class GripAngleDef : AnnotationDefinition
@@ -37,24 +32,44 @@ namespace UnityEngine.Perception.GroundTruth
         [Serializable]
         class GripAngle : Annotation
         {
-            public float AngleTop, AngleBot;
-            public bool IsClosed;
-            
-            public GripAngle(AnnotationDefinition definition, string sensorId, float angleTop, float angleBot, float maxAngleDegrees)
+            public AngleInformation[] AngleInfo;
+            public GripAngle(
+                AnnotationDefinition definition,
+                string sensorId,
+                AngleInformation[] angleInfo
+                )
                 : base(definition, sensorId)
             {
-                AngleTop = angleTop;
-                AngleBot = angleBot;
-                IsClosed = AngleTop - AngleBot * -1.0f < maxAngleDegrees;
+                AngleInfo = angleInfo; ;
             }
 
+            [Serializable]
+            public struct AngleInformation : IMessageProducer
+            {
+                public string ToolName;
+                public float AngleTop, AngleBot;
+                public Quaternion QuaternionTop, QuaternionBot;
+                public bool IsClosed;
+
+                public void ToMessage(IMessageBuilder builder)
+                {
+                    builder.AddString("ToolName", ToolName);
+                    builder.AddFloat("AngleTop", AngleTop);
+                    builder.AddFloat("AngleBot", AngleBot);
+                    builder.AddBool("isClosed", IsClosed);
+                    builder.AddString("QuaternionTop", QuaternionTop.ToString());
+                    builder.AddString("QuaternionBot", QuaternionBot.ToString());
+                }
+            }
 
             public override void ToMessage(IMessageBuilder builder)
             {
                 base.ToMessage(builder);
-                builder.AddFloat("AngleTop", AngleTop);
-                builder.AddFloat("AngleBot", AngleBot);
-                builder.AddBool("isClosed", IsClosed);
+
+                foreach (var ai in AngleInfo)
+                {
+                    ai.ToMessage(builder);
+                }
             }
 
             public override bool IsValid() => true;
@@ -66,66 +81,41 @@ namespace UnityEngine.Perception.GroundTruth
             DatasetCapture.RegisterAnnotationDefinition(gripAngleDef);
         }
 
-        /*bool TryToGetTemplateIndexForJoint(KeypointTemplate template, JointLabel joint, out int index)
-        {
-            index = -1;
-
-            foreach (var label in joint.labels)
-            {
-                for (var i = 0; i < template.keypoints.Length; i++)
-                {
-                    if (template.keypoints[i].label == label)
-                    {
-                        index = i;
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }*/
-
         protected override void OnBeginRendering(ScriptableRenderContext scriptableRenderContext)
         {
-            //Get local z rotation of both grips of the left tool
-            //var lightPos = targetLight.transform.position;
-            //var metric = new GenericMetric(new[] { lightPos.x, lightPos.y, lightPos.z }, angleTopMetricDefinition);
-            //DatasetCapture.ReportMetric(angleTopMetricDefinition, metric);
-
-            //Get local z rotation of both grips of the right tool
-
             if (perceptionCamera.SensorHandle.ShouldCaptureThisFrame)
             {
+                List<GripAngle.AngleInformation> angleInformation = new List<GripAngle.AngleInformation>();
+                
                 foreach (var label in LabelManager.singleton.registeredLabels)
-                    ProcessLabel(label);
+                    ProcessLabel(label, ref angleInformation);
+
+                var annotation = new GripAngle(gripAngleDef, sensorHandle.Id, angleInformation.ToArray());
+                sensorHandle.ReportAnnotation(gripAngleDef, annotation);
             }
 
         }
 
-        void ProcessLabel(Labeling labeledEntity)
+        void ProcessLabel(Labeling labeledEntity, ref List<GripAngle.AngleInformation> angleInformation)
         {
             var entityGameObject = labeledEntity.gameObject;
             float angleTop = 0f, angleBot = 0f;
+            Quaternion qTop = Quaternion.identity, qBot = Quaternion.identity;
             bool mayReport = false;
-            
-            // TODO: we can optimize this, no need to iterate over everything
+
             foreach (var joint in entityGameObject.transform.GetComponentsInChildren<JointLabel>())
             {
-                //TryToGetTemplateIndexForJoint(activeTemplate, joint, out var idx)
                 foreach (var label in joint.labels) // Usually this is just a list of one label
                 {
-                    if (label == "B_Driver_01")        //TODO: Expose hardcoded var
+                    if (label == "B_Driver_01")     
                     {
-                        // TODO: check
-                        //Debug.Log($"Driver 1 found {entityGameObject.name} " + joint.transform.localEulerAngles);
                         angleTop = joint.transform.localEulerAngles.y;
-
+                        qTop = joint.transform.localRotation;
                     }
-                    else if (label == "B_Driver_02")   //TODO: Expose hardcoded var
+                    else if (label == "B_Driver_02")
                     {
-                        // TODO: idem ditto
-                        //Debug.Log($"Driver 2 found {entityGameObject.name} " + joint.transform.localEulerAngles);
                         angleBot = joint.transform.localEulerAngles.y;
+                        qBot = joint.transform.localRotation;
                         mayReport = true;
                     }
                 }
@@ -133,59 +123,18 @@ namespace UnityEngine.Perception.GroundTruth
 
             if (!mayReport) return;
 
-            // TODO: We are using metrics because ReportAnnotation() is broken in 0.10.0-preview.1
-            // We can switch to ReportAnnotation() in the future.
-            // TODO: aggregate angleTop & angleBot to one variable, add index
-/*            var values = new Dictionary<string, string>()
-            {
-                {"angleTop", angleTop.ToString()},
-                {"angleBot", angleBot.ToString()},
-                {"gripClosed", (angleTop - angleBot < maxAngleDegrees).ToString()}
-            };*/
+            bool isClosed = Math.Abs(angleTop - angleBot) < maxAngleDegrees;
 
-            //Debug.Log($"{angleTop} {angleBot} {Math.Abs(angleTop - angleBot) < maxAngleDegrees}");
-/*            var v = new Dictionary<string, Dictionary<string, string>>()
+            GripAngle.AngleInformation angleInfo = new GripAngle.AngleInformation
             {
-                {labeledEntity.instanceId.ToString(), values}
-            };*/
-            // TODO: GenericMetric accepts only float array, not dict
-            // Follow up: https://github.com/Unity-Technologies/com.unity.perception/issues/485
-/*            var metricTop = new GenericMetric( new float[] { angleTop, angleBot, (Math.Abs(angleTop - angleBot) < maxAngleDegrees) ? 1.0f : 0.0f }, angleTopMetricDefinition);
-            DatasetCapture.ReportMetric(angleTopMetricDefinition, metricTop);*/
-/*            var metricBot = new GenericMetric(new[] { angleBot }, angleBotMetricDefinition);
-            DatasetCapture.ReportMetric(angleBotMetricDefinition, metricBot);
-            var metricGripClosed = new GenericMetric(new[] { angleTop - (angleBot * -1.0f) < maxAngleDegrees }, gripClosedMetricDefinition);
-            DatasetCapture.ReportMetric(gripClosedMetricDefinition, metricGripClosed);*/
-
-            var annotation = new GripAngle(gripAngleDef, sensorHandle.Id, angleTop, angleBot, maxAngleDegrees);
-            sensorHandle.ReportAnnotation(gripAngleDef, annotation);
+                ToolName = entityGameObject.name.Replace("(Clone)", ""),
+                AngleTop = angleTop,
+                AngleBot = angleBot,
+                IsClosed = isClosed,
+                QuaternionTop = qTop,
+                QuaternionBot = qBot
+            };
+            angleInformation.Add(angleInfo);
         }
     }
 }
-// Example metric that is added each frame in the dataset:
-// {
-//   "capture_id": null,
-//   "annotation_id": null,
-//   "sequence_id": "9768671e-acea-4c9e-a670-0f2dba5afe12",
-//   "step": 1,
-//   "metric_definition": "lightMetric1",
-//   "values": [
-//      96.1856,
-//      192.675964,
-//      -193.838638
-//    ]
-// },
-
-// Example annotation that is added to each capture in the dataset:
-// {
-//     "annotation_id": "target1",
-//     "model_type": "targetPosDef",
-//     "description": "The position of the target in the camera's local space",
-//     "sensor_id": "camera",
-//     "id": "target1",
-//     "position": [
-//         1.85350215,
-//         -0.253945172,
-//         -5.015307
-//     ]
-// }
