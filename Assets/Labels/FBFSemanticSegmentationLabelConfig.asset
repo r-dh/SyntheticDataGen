@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9d0176327854820ab53adc46cbec7c1, type: 3}
-  m_Name: OrsiSemanticSegmentationLabelConfig
+  m_Name: FBFSemanticSegmentationLabelConfig
   m_EditorClassIdentifier: 
   m_LabelEntries:
-  - label: LargeNeedleDriver_L
-    color: {r: 0, g: 0, b: 1, a: 1}
-  - label: LargeNeedleDriver_R
-    color: {r: 0, g: 0.47058827, b: 1, a: 1}
   - label: ORSI_Needle_01
     color: {r: 0.0027144956, g: 0.5754717, b: 0.0027144956, a: 1}
   - label: ORSI_Needle_02
     color: {r: 0, g: 1, b: 0, a: 1}
+  - label: FenestratedBipolarForceps_R
+    color: {r: 0, g: 0.47058827, b: 1, a: 1}
+  - label: FenestratedBipolarForceps_L
+    color: {r: 0, g: 0, b: 1, a: 1}
+  skyColor: {r: 0, g: 0, b: 0, a: 1}

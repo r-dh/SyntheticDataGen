@@ -128,7 +128,8 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 RandomMovement rm = instance.AddComponent<RandomMovement>();
                 float min = Math.Min(sample.x * 0.9f, sample.x * 1.1f) + offset.x;
                 float max = Math.Max(sample.x * 0.9f, sample.x * 1.1f) + offset.x;
-                rm.Init(new float2(min, max), new float2(-15f, 15f));
+
+                rm.Init(new float2(min, max), new float2(placementArea.y * -0.5f, placementArea.y * 0.5f));
                 tools.Add(instance);
 
                 // TODO(low): check if rotation is truly uniform
@@ -151,7 +152,8 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
 
                 NormalSampler nsSpeed = new NormalSampler(1, 40, 25, 0.5f);
 
-                string pathHinge01 = "ORSI_LND_04/B_Root/B_Shaft_01/B_Hinge_01";
+                string instrument = instance.transform.GetChild(0).name;
+                string pathHinge01 = $"{instrument}/B_Root/B_Shaft_01/B_Hinge_01";
                 var hinge01 = instance.transform.Find(pathHinge01);
                 initialRotations.Add(hinge01.localRotation);
                 hinge01.Rotate(rotationList[0 + i * 4]);
@@ -171,7 +173,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 // TODO: randomly choose true/false for flip axis
                 NormalSampler nsMinAngle = new NormalSampler(-90f, tip1, (-90f + tip1)/2, 1f, true, -90f, tip1);
 
-                var driver01 = instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_01");
+                var driver01 = instance.transform.Find(pathHinge01 + "/B_Hinge_02").GetChild(2);
                 initialRotations.Add(driver01.localRotation);
                 driver01.Rotate(rotationList[2 + i * 4]);
                 var prd01 = driver01.gameObject.AddComponent<PermanentRotation>();
@@ -181,7 +183,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 prd01.InitPermanentRotation(tip1, Vector3.forward, nsSpeed.Sample(), nsMinAngle.Sample(), centerpoint, true);
                 animatedRotations.Add(prd01);
 
-                var driver02 = instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_02");
+                var driver02 = instance.transform.Find(pathHinge01 + "/B_Hinge_02").GetChild(3);
                 initialRotations.Add(driver02.localRotation);
                 driver02.Rotate(rotationList[3 + i * 4]);
                 var prd02 = driver02.gameObject.AddComponent<PermanentRotation>();
@@ -201,11 +203,12 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
             {
                 var instance = tools[i];
 
-                string pathHinge01 = "ORSI_LND_04/B_Root/B_Shaft_01/B_Hinge_01";
+                string instrument = instance.transform.GetChild(0).name;
+                string pathHinge01 = $"{instrument}/B_Root/B_Shaft_01/B_Hinge_01";
                 instance.transform.Find(pathHinge01).localRotation = initialRotations[0 + i * 4];
                 instance.transform.Find(pathHinge01 + "/B_Hinge_02").localRotation = initialRotations[1 + i * 4];
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_01").localRotation = initialRotations[2 + i * 4];
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02/B_Driver_02").localRotation = initialRotations[3 + i * 4];
+                instance.transform.Find(pathHinge01 + "/B_Hinge_02").GetChild(2).localRotation = initialRotations[2 + i * 4];
+                instance.transform.Find(pathHinge01 + "/B_Hinge_02").GetChild(3).localRotation = initialRotations[3 + i * 4];
             }
 
             tools.Clear();

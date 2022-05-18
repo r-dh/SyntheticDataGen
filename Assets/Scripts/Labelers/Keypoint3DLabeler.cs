@@ -16,7 +16,12 @@ namespace UnityEngine.Perception.GroundTruth
 
         public string annotationId = "keypoint3d_labeler";
 
-        AnnotationDefinition keypointPositionDef;
+        /// <summary>
+        /// The active keypoint template. Required to annotate keypoint data.
+        /// </summary>
+        public KeypointTemplate activeTemplate;
+
+        private AnnotationDefinition keypointPositionDef;
 
         class Keypoint3DPositionDef : AnnotationDefinition
         {
@@ -33,51 +38,43 @@ namespace UnityEngine.Perception.GroundTruth
         class Keypoint3DPosition : Annotation
         {
             //public string ToolName;
-            public KeypointsMessage[] keypointsMessage;
+            public Keypoints3D[] keypoints3DList;
+
             public Keypoint3DPosition(
                 AnnotationDefinition definition,
                 string sensorId,
-                KeypointsMessage[] messages
+                Keypoints3D[] keypoints
             )
                 : base(definition, sensorId)
             {
-                keypointsMessage = messages;
+                keypoints3DList = keypoints;
             }
 
             [Serializable]
-            public struct KeypointsMessage : IMessageProducer
+            public struct Keypoints3D : IMessageProducer
             {
                 public string toolName;
                 public Dictionary<string, Vector3> DataPoints;
+                public KeypointTemplate Template;
 
                 public void ToMessage(IMessageBuilder builder)
                 {
                     builder.AddString("Instrument", toolName);
-                    builder.AddFloatArray("B_Hinge_01", MessageBuilderUtils.ToFloatVector(DataPoints["B_Hinge_01"]));
 
-                    builder.AddFloatArray("B_Hinge_02", MessageBuilderUtils.ToFloatVector(DataPoints["B_Hinge_02"]));
-                    builder.AddFloatArray("_Joint_1_axis1", MessageBuilderUtils.ToFloatVector(DataPoints["_Joint_1_axis1"]));
-                    builder.AddFloatArray("_Joint_1_axis2", MessageBuilderUtils.ToFloatVector(DataPoints["_Joint_1_axis2"]));
-
-                    builder.AddFloatArray("B_Driver_01", MessageBuilderUtils.ToFloatVector(DataPoints["B_Driver_01"]));
-                    builder.AddFloatArray("_Joint_2_axis1", MessageBuilderUtils.ToFloatVector(DataPoints["_Joint_2_axis1"]));
-                    builder.AddFloatArray("_Joint_2_axis2", MessageBuilderUtils.ToFloatVector(DataPoints["_Joint_2_axis2"]));
-
-                    builder.AddFloatArray("B_Tip_01", MessageBuilderUtils.ToFloatVector(DataPoints["B_Tip_01"]));
-                    builder.AddFloatArray("B_Tip_02", MessageBuilderUtils.ToFloatVector(DataPoints["B_Tip_02"]));
+                    foreach (var kp in Template.keypoints)
+                    {
+                        builder.AddFloatArray(kp.label, MessageBuilderUtils.ToFloatVector(DataPoints[kp.label]));
+                    }
                 }
             }
 
             public override void ToMessage(IMessageBuilder builder)
             {
                 base.ToMessage(builder);
-                //builder.AddString("Instrument", ToolName);
-                foreach (var km in keypointsMessage)
+                foreach (var kp in keypoints3DList)
                 {
-                    //var nested = builder.AddNestedMessage(ToolName);
-                    km.ToMessage(builder);
+                    kp.ToMessage(builder);
                 }
-
             }
 
             public override bool IsValid() => true;
@@ -94,40 +91,30 @@ namespace UnityEngine.Perception.GroundTruth
             //Report using the PerceptionCamera's SensorHandle if scheduled this frame
             if (perceptionCamera.SensorHandle.ShouldCaptureThisFrame)
             {
-                List<Keypoint3DPosition.KeypointsMessage> keypointsMessages =
-                    new List<Keypoint3DPosition.KeypointsMessage>();
+                List<Keypoint3DPosition.Keypoints3D> keypoints3D =
+                    new List<Keypoint3DPosition.Keypoints3D>();
 
                 foreach (var label in LabelManager.singleton.registeredLabels)
-                    ProcessLabel(label, ref keypointsMessages);
-                // TODO: check how many Labels there are and in which way these are processed
-                // If the instruments are processed one by one, great
-                // If not, keep track of this
+                    ProcessLabel(label, activeTemplate, ref keypoints3D);
 
-                var annotation = new Keypoint3DPosition(keypointPositionDef, sensorHandle.Id, keypointsMessages.ToArray());
+                var annotation = new Keypoint3DPosition(keypointPositionDef, sensorHandle.Id, keypoints3D.ToArray());
                 sensorHandle.ReportAnnotation(keypointPositionDef, annotation);
             }
         }
 
-        void ProcessLabel(Labeling labeledEntity, ref List<Keypoint3DPosition.KeypointsMessage> keypointsMessages)
+        void ProcessLabel(Labeling labeledEntity, KeypointTemplate keypointTemplate, ref List<Keypoint3DPosition.Keypoints3D> keypointsMessages)
         {
             var entityGameObject = labeledEntity.gameObject;
 
             string toolName = entityGameObject.name;
             bool mayReport = false;
-            // If the instruments are processed one by one, great
-            // If not, keep track of this (name of entity in extra var on top of dict?)
-            var dataPoints = new Dictionary<string, Vector3>()
+
+            var dataPoints = new Dictionary<string, Vector3>();
+
+            foreach (var kp in keypointTemplate.keypoints)
             {
-                {"B_Hinge_01", Vector3.zero},
-                {"B_Hinge_02", Vector3.zero},
-                {"_Joint_1_axis1", Vector3.zero},
-                {"_Joint_1_axis2", Vector3.zero},
-                {"B_Driver_01", Vector3.zero},
-                {"_Joint_2_axis1", Vector3.zero},
-                {"_Joint_2_axis2", Vector3.zero},
-                {"B_Tip_01", Vector3.zero},
-                {"B_Tip_02", Vector3.zero}
-            };
+                dataPoints.Add(kp.label, Vector3.zero);
+            }
 
             foreach (var joint in entityGameObject.transform.GetComponentsInChildren<JointLabel>())
             {
@@ -142,8 +129,8 @@ namespace UnityEngine.Perception.GroundTruth
             }
 
             if (!mayReport) return;
-            Keypoint3DPosition.KeypointsMessage message = new Keypoint3DPosition.KeypointsMessage { toolName = toolName, DataPoints = dataPoints };
-            keypointsMessages.Add(message);
+            Keypoint3DPosition.Keypoints3D keypoints = new Keypoint3DPosition.Keypoints3D { toolName = toolName.Replace("(Clone)", ""), DataPoints = dataPoints };
+            keypointsMessages.Add(keypoints);
         }
     }
 }

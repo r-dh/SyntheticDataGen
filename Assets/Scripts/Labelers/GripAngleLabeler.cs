@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Perception.GroundTruth.DataModel;
@@ -16,6 +17,7 @@ namespace UnityEngine.Perception.GroundTruth
         protected override bool supportsVisualization => false;
 
         public string annotationId = "grip_angle_labeler";
+        public string[] labelsTracked;
         public float maxAngleDegrees = 5;
 
         private AnnotationDefinition gripAngleDef;
@@ -71,7 +73,6 @@ namespace UnityEngine.Perception.GroundTruth
                     ai.ToMessage(builder);
                 }
             }
-
             public override bool IsValid() => true;
         }
 
@@ -86,44 +87,40 @@ namespace UnityEngine.Perception.GroundTruth
             if (perceptionCamera.SensorHandle.ShouldCaptureThisFrame)
             {
                 List<GripAngle.AngleInformation> angleInformation = new List<GripAngle.AngleInformation>();
-                
+
                 foreach (var label in LabelManager.singleton.registeredLabels)
                     ProcessLabel(label, ref angleInformation);
 
                 var annotation = new GripAngle(gripAngleDef, sensorHandle.Id, angleInformation.ToArray());
                 sensorHandle.ReportAnnotation(gripAngleDef, annotation);
             }
-
         }
 
         void ProcessLabel(Labeling labeledEntity, ref List<GripAngle.AngleInformation> angleInformation)
         {
             var entityGameObject = labeledEntity.gameObject;
-            float angleTop = 0f, angleBot = 0f;
-            Quaternion qTop = Quaternion.identity, qBot = Quaternion.identity;
-            bool mayReport = false;
 
-            foreach (var joint in entityGameObject.transform.GetComponentsInChildren<JointLabel>())
+            var dataPoints = new List<Tuple<float, Quaternion>>();
+
+            foreach (var go in entityGameObject.transform.GetComponentsInChildren<TrackOrientationTag>())
             {
-                foreach (var label in joint.labels) // Usually this is just a list of one label
+                if (labelsTracked.Contains(go.name))
                 {
-                    if (label == "B_Driver_01")     
-                    {
-                        angleTop = joint.transform.localEulerAngles.y;
-                        qTop = joint.transform.localRotation;
-                    }
-                    else if (label == "B_Driver_02")
-                    {
-                        angleBot = joint.transform.localEulerAngles.y;
-                        qBot = joint.transform.localRotation;
-                        mayReport = true;
-                    }
+                    dataPoints.Add(new Tuple<float, Quaternion>(
+                            go.transform.localEulerAngles.y,
+                            go.transform.localRotation)
+                    );
                 }
             }
 
-            if (!mayReport) return;
+            if (dataPoints.Count() != 2) return;
 
+            float angleTop = dataPoints[0].Item1;
+            float angleBot = dataPoints[1].Item1;
             bool isClosed = Math.Abs(angleTop - angleBot) < maxAngleDegrees;
+
+            Quaternion qTop = dataPoints[0].Item2;
+            Quaternion qBot = dataPoints[1].Item2;
 
             GripAngle.AngleInformation angleInfo = new GripAngle.AngleInformation
             {
