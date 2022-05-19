@@ -10,21 +10,20 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
     [AddRandomizerMenu("Perception/My Static Background Randomizer")]
     public class MyStaticBackgroundRandomizer : Randomizer
     {
-        public Image Background;
+        public Material backgroundMaterial;
         public SpriteParameter Sprites;
 
         protected override void OnAwake()
         {
-            if (Background == null)
+            if (backgroundMaterial == null)
             {
-                throw new Exception("Set background in MyStaticBackgroundRandomizer");
+                throw new Exception("Set background material in MyStaticBackgroundRandomizer");
             }
- // Sprites.SetOptions();
         }
 
         protected override void OnIterationStart()
         {
-            Background.sprite = Sprites.Sample();
+            backgroundMaterial.SetTexture("_BaseMap", Sprites.Sample().texture);
         }
     }
 }

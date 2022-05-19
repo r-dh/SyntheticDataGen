@@ -143,13 +143,13 @@ MonoBehaviour:
     showEyeDropper: 1
   highlights:
     m_OverrideState: 1
-    m_Value: {r: 0.9960785, g: 0.8000001, b: 0.59607846, a: 1}
+    m_Value: {r: 0.9811321, g: 0.905814, b: 0.8274831, a: 1}
     hdr: 0
     showAlpha: 0
     showEyeDropper: 1
   balance:
     m_OverrideState: 1
-    m_Value: 37.1
+    m_Value: 73.2
     min: -100
     max: 100
 --- !u!114 &-625265826393611986
