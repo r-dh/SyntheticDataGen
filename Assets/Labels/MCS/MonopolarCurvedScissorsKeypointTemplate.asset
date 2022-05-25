@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37a7d6f1a40c45a2981a6291f0d03337, type: 3}
+  m_Name: MonopolarCurvedScissorsKeypointTemplate
+  m_EditorClassIdentifier: 
+  templateID: 80162a53-380e-4ce5-95ff-62c5e8a77be2
+  templateName: Monopolar Curved Scissors
+  jointTexture: {fileID: 2800000, guid: e381cbaaf29614168bafc8f7ec5dbfe9, type: 3}
+  skeletonTexture: {fileID: 2800000, guid: e381cbaaf29614168bafc8f7ec5dbfe9, type: 3}
+  keypoints:
+  - label: B_Hinge_01
+    associateToRig: 1
+    rigLabel: 0
+    color: {r: 0, g: 0.9244368, b: 1, a: 1}
+    selfOcclusionDistance: 0.15
+  - label: B_Scissor_Big
+    associateToRig: 1
+    rigLabel: 0
+    color: {r: 1, g: 0.8867588, b: 0, a: 1}
+    selfOcclusionDistance: 0.15
+  - label: B_Scissor_Big_End
+    associateToRig: 1
+    rigLabel: 0
+    color: {r: 1, g: 0, b: 0.08437061, a: 1}
+    selfOcclusionDistance: 0.15
+  - label: B_Scissor_Small_End
+    associateToRig: 1
+    rigLabel: 0
+    color: {r: 1, g: 0.44054037, b: 0, a: 1}
+    selfOcclusionDistance: 0.15
+  - label: _Joint_1_axis1
+    associateToRig: 0
+    rigLabel: 0
+    color: {r: 0.5768442, g: 0, b: 1, a: 1}
+    selfOcclusionDistance: 0.15
+  - label: _Joint_1_axis2
+    associateToRig: 0
+    rigLabel: 0
+    color: {r: 0.5803922, g: 0, b: 1, a: 1}
+    selfOcclusionDistance: 0.15
+  skeleton:
+  - joint1: 0
+    joint2: 1
+    color: {r: 0, g: 0, b: 1, a: 1}
+  - joint1: 1
+    joint2: 2
+    color: {r: 0, g: 0, b: 1, a: 1}
+  - joint1: 1
+    joint2: 3
+    color: {r: 0, g: 0, b: 1, a: 1}
+  - joint1: 2
+    joint2: 4
+    color: {r: 0, g: 0, b: 1, a: 1}
+  - joint1: 0
+    joint2: 4
+    color: {r: 0, g: 0.45969248, b: 1, a: 1}
+  - joint1: 1
+    joint2: 6
+    color: {r: 0, g: 0.45882356, b: 1, a: 1}
+  - joint1: 0
+    joint2: 5
+    color: {r: 0, g: 0.45882356, b: 1, a: 1}

@@ -1,0 +1,150 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3994c451e5924d54b87b1500a481c9e1, type: 3}
+  m_Name: FBFJointConstraintsTemplate
+  m_EditorClassIdentifier: 
+  templateID: 54fd2bf0-e13b-468c-b7ae-7ea8be567b8f
+  templateName: FBFConstraints
+  instrumentName: FenestratedBipolarForceps
+  constraints:
+  - Name: B_Hinge_01
+    Axis: {x: 1, y: 0, z: 0}
+    MinimumRotation: -360
+    MaximumRotation: 360
+    SpeedSampler:
+      mean: 25
+      standardDeviation: 0.5
+      range:
+        minimum: 1
+        maximum: 40
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    SpeedVariationSampler:
+      mean: 1
+      standardDeviation: 0.5
+      range:
+        minimum: 0.1
+        maximum: 1.5
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    CooldownChance: 0.005
+    FlipVelocityChance: 0.5
+    CooldownDuration:
+      range:
+        minimum: 0.1
+        maximum: 2
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    isTip1: 0
+    isTip2: 0
+  - Name: B_Hinge_02
+    Axis: {x: 0, y: 0, z: 1}
+    MinimumRotation: -80
+    MaximumRotation: 80
+    SpeedSampler:
+      mean: 25
+      standardDeviation: 0.5
+      range:
+        minimum: 1
+        maximum: 40
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    SpeedVariationSampler:
+      mean: 1
+      standardDeviation: 0.5
+      range:
+        minimum: 0.1
+        maximum: 1.5
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    CooldownChance: 0.005
+    FlipVelocityChance: 0.5
+    CooldownDuration:
+      range:
+        minimum: 0.1
+        maximum: 2
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    isTip1: 0
+    isTip2: 0
+  - Name: B_Forceps_01
+    Axis: {x: 0, y: 0, z: 1}
+    MinimumRotation: -90
+    MaximumRotation: 90
+    SpeedSampler:
+      mean: 25
+      standardDeviation: 0.5
+      range:
+        minimum: 1
+        maximum: 40
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    SpeedVariationSampler:
+      mean: 0
+      standardDeviation: 1
+      range:
+        minimum: -1
+        maximum: 1
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    CooldownChance: 0.005
+    FlipVelocityChance: 0.5
+    CooldownDuration:
+      range:
+        minimum: 0.1
+        maximum: 2
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    isTip1: 1
+    isTip2: 0
+  - Name: B_Forceps_02
+    Axis: {x: 0, y: 0, z: 1}
+    MinimumRotation: -90
+    MaximumRotation: 90
+    SpeedSampler:
+      mean: 25
+      standardDeviation: 0.5
+      range:
+        minimum: 1
+        maximum: 40
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    SpeedVariationSampler:
+      mean: 1
+      standardDeviation: 0.5
+      range:
+        minimum: 0.1
+        maximum: 1.5
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    CooldownChance: 0.005
+    FlipVelocityChance: 0.5
+    CooldownDuration:
+      range:
+        minimum: 0.1
+        maximum: 2
+      <minAllowed>k__BackingField: 0
+      <maxAllowed>k__BackingField: 0
+      <shouldCheckValidRange>k__BackingField: 0
+    isTip1: 0
+    isTip2: 1

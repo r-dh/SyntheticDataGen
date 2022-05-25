@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Perception.GroundTruth;
 using UnityEngine.Perception.Randomization.Parameters;
 using UnityEngine.Perception.Randomization.Randomizers.Utilities;
 using UnityEngine.Perception.Randomization.Samplers;
@@ -48,6 +49,13 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
         public GameObjectParameter prefabs;
 
         /// <summary>
+        /// The joint constraints to enforce on the instruments
+        /// </summary>
+        [Tooltip("The constraints enforced on the rotations.")]
+        public JointConstraintsTemplate jointConstrains;
+
+
+        /// <summary>
         /// The list of prefabs sample and randomly place
         /// </summary>
         [Tooltip("The minimum and maximum amount of instruments in the frame.")]
@@ -71,11 +79,10 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
 
         private UniformSampler uniformSampler;
 
-        private List<Vector3> rotationList = new List<Vector3>();
-        private List<Quaternion> initialRotations = new List<Quaternion>();
+        private Dictionary<string, Quaternion> initialRotations = new Dictionary<string, Quaternion>();
         private List<PermanentRotation> animatedRotations = new List<PermanentRotation>();
         private List<GameObject> tools = new List<GameObject>();
-
+        private Dictionary<string, JointConstraint> jcDict = new Dictionary<string, JointConstraint>(); // Not ordered, could lead to future bugs
         /// <inheritdoc/>
         protected override void OnAwake()
         {
@@ -86,6 +93,11 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
             m_GameObjectOneWayCache = new GameObjectOneWayCache(
                 m_Container.transform, prefabs.categories.Select(
                     element => element.Item1).ToArray(), this);
+
+            foreach (var constraint in jointConstrains.constraints)
+            {
+                jcDict.Add(constraint.Name, constraint);
+            }
         }
 
         /// <summary>
@@ -114,16 +126,12 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
 
         private void PlaceAndRotateInstruments(float2 left, float2 right, Vector3 offset)
         {
-            var rotationSampler = new UniformSampler(0, 360);
-
             for (int i = 0; i < prefabs.GetCategoryCount(); i++)
             {
                 float2 sample = (i == 0) ? left : right;
 
-                var instance = m_GameObjectOneWayCache.GetOrInstantiate(
-                    prefabs.GetCategory(i));
-                instance.transform.localPosition = new Vector3(
-                    sample.x, sample.y, depth) + offset;
+                var instance = m_GameObjectOneWayCache.GetOrInstantiate(prefabs.GetCategory(i));
+                instance.transform.localPosition = new Vector3(sample.x, sample.y, depth) + offset;
 
                 RandomMovement rm = instance.AddComponent<RandomMovement>();
                 float min = Math.Min(sample.x * 0.9f, sample.x * 1.1f) + offset.x;
@@ -132,68 +140,44 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 rm.Init(new float2(min, max), new float2(placementArea.y * -0.5f, placementArea.y * 0.5f));
                 tools.Add(instance);
 
-                // TODO(low): check if rotation is truly uniform
-                // Rotate the first hinge randomly between 0° - 360° on the x-axis
-                float x = rotationSampler.Sample();
-                rotationList.Add(new Vector3(x, 0, 0));
+                float tip1 = 0f, tip2 = 0f, centerpoint = 0f;
 
-                // Rotate the second hinge randomly between -80° - 80° on the z-axis
-                var rotation = rotationSampler.Sample();
-                rotationList.Add(new Vector3(0, 0, (rotation % 160) - 80)); //(rotation % 180) - 90
+                foreach (var hinge in instance.GetComponentsInChildren<Transform>())
+                {
+                    // TODO: check if this is in order
+                    if (jcDict.ContainsKey(hinge.name))
+                    {
+                        var constraint = jcDict[hinge.name];
+                        var rotationSampler = new UniformSampler(constraint.MinimumRotation, constraint.MaximumRotation);
+                        var initialOffset = rotationSampler.Sample();
+                        
+                        initialRotations.Add($"{instance.name}_{hinge.name}", hinge.localRotation);
 
-                // Rotate the first driver (tip) randomly between -90° - 90° on the z-axis
-                rotation = rotationSampler.Sample();
-                var tip1 = (rotation - 180) % 90;
-                rotationList.Add(new Vector3(0, 0, tip1));
+                        if (!constraint.isTip2)
+                        {
+                            hinge.Rotate(initialOffset * constraint.Axis);
+                        }
 
-                // Rotate the second driver (tip) randomly between -90° and the first driver (inverted) on the z-axis
-                var tip2 = new UniformSampler(-90, tip1 * -1f).Sample();
-                rotationList.Add(new Vector3(0, 0, tip2));
+                        var pr = hinge.gameObject.AddComponent<PermanentRotation>();
+                        
+                        if (constraint.isTip1)  {
+                            tip1 = initialOffset;
+                            tip2 = new UniformSampler(constraint.MinimumRotation, tip1 * -1f).Sample(); // min is used from tip1, we expect this to be symmetrical
+                            centerpoint = (tip1 - tip2) / 2;
 
-                NormalSampler nsSpeed = new NormalSampler(1, 40, 25, 0.5f);
+                            pr.InitPermanentRotation(initialOffset, constraint, constraint.MinimumRotation, centerpoint);
+                        } else if (constraint.isTip2) {
+                            hinge.Rotate(tip2 * constraint.Axis);
+                            pr.InitPermanentRotation(tip2, constraint, constraint.MinimumRotation, -centerpoint);
+                        } else {
+                            pr.InitPermanentRotation(initialOffset, constraint, constraint.MinimumRotation, constraint.MaximumRotation);
+                        }
 
-                string instrument = instance.transform.GetChild(0).name;
-                string pathHinge01 = $"{instrument}/B_Root/B_Shaft_01/B_Hinge_01";
-                var hinge01 = instance.transform.Find(pathHinge01);
-                initialRotations.Add(hinge01.localRotation);
-                hinge01.Rotate(rotationList[0 + i * 4]);
-                var prh01 = hinge01.gameObject.AddComponent<PermanentRotation>();
-                prh01.InitPermanentRotation(0f, Vector3.right);
-                animatedRotations.Add(prh01);
-
-                var hinge02 = instance.transform.Find(pathHinge01 + "/B_Hinge_02");
-                initialRotations.Add(hinge02.localRotation);
-                hinge02.Rotate(rotationList[1 + i * 4]);
-                var prh02 = hinge02.gameObject.AddComponent<PermanentRotation>();
-                float currentPos = rotationList[1 + i * 4].z;
-
-                prh02.InitPermanentRotation(currentPos, Vector3.forward, nsSpeed.Sample(), -80f, 80f, true);
-                animatedRotations.Add(prh02);
-                // TODO: Randomly choose between forward/backward and then calculate maxangle
-                // TODO: randomly choose true/false for flip axis
-                NormalSampler nsMinAngle = new NormalSampler(-90f, tip1, (-90f + tip1)/2, 1f, true, -90f, tip1);
-
-                var driver01 = instance.transform.Find(pathHinge01 + "/B_Hinge_02").GetChild(2);
-                initialRotations.Add(driver01.localRotation);
-                driver01.Rotate(rotationList[2 + i * 4]);
-                var prd01 = driver01.gameObject.AddComponent<PermanentRotation>();
-                //TODO: This is probably riddled with unwanted behaviour
-                //TODO: decide on centerpoint
-                float centerpoint = (tip1 - tip2) / 2;
-                prd01.InitPermanentRotation(tip1, Vector3.forward, nsSpeed.Sample(), nsMinAngle.Sample(), centerpoint, true);
-                animatedRotations.Add(prd01);
-
-                var driver02 = instance.transform.Find(pathHinge01 + "/B_Hinge_02").GetChild(3);
-                initialRotations.Add(driver02.localRotation);
-                driver02.Rotate(rotationList[3 + i * 4]);
-                var prd02 = driver02.gameObject.AddComponent<PermanentRotation>();
-                //TODO: This is probably riddled with unwanted behaviour
-                prd02.InitPermanentRotation(tip2, Vector3.forward, nsSpeed.Sample(), -90f, -centerpoint, true);
-                animatedRotations.Add(prd02);
-
+                        animatedRotations.Add(pr);
+                    }
+                }
             }
         }
-
         /// <summary>
         /// Resets the various components to their original rotations
         /// </summary>
@@ -203,16 +187,17 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
             {
                 var instance = tools[i];
 
-                string instrument = instance.transform.GetChild(0).name;
-                string pathHinge01 = $"{instrument}/B_Root/B_Shaft_01/B_Hinge_01";
-                instance.transform.Find(pathHinge01).localRotation = initialRotations[0 + i * 4];
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02").localRotation = initialRotations[1 + i * 4];
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02").GetChild(2).localRotation = initialRotations[2 + i * 4];
-                instance.transform.Find(pathHinge01 + "/B_Hinge_02").GetChild(3).localRotation = initialRotations[3 + i * 4];
+                foreach (var hinge in instance.GetComponentsInChildren<Transform>())
+                {
+                    if (initialRotations.ContainsKey($"{instance.name}_{hinge.name}"))
+                    {
+                        hinge.localRotation = initialRotations[$"{instance.name}_{hinge.name}"];
+                    }
+                }
+
             }
 
             tools.Clear();
-            rotationList.Clear();
             initialRotations.Clear();
         }
 

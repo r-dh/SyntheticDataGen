@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Perception.GroundTruth;
 using UnityEngine.Perception.Randomization.Samplers;
 using UnityEngine.Rendering;
 using Random = UnityEngine.Random;
@@ -9,39 +10,43 @@ using Random = UnityEngine.Random;
 
 public class PermanentRotation : MonoBehaviour
 {
-    public float DefaultSpeed = 25f;
-    public float Delay = 0f;
-    public float MaxDuration = 1000f;
-    public float MaxAngle = 1000f;
-    public float MinAngle = 1000f;
-    public Vector3 Axis = Vector3.right;
-    public bool FlipAxis = false;
+    private float _defaultSpeed = 25f;
+    private float _delay = 0f;
+    private float _maxDuration = 1000f;
+    private float _maxAngle = 1000f;
+    private float _minAngle = 1000f;
+    private Vector3 _axis = Vector3.right;
+    private float _cooldownChance = 0.005f;
     private float _duration = 0f;
     private float _currentAngle = 0f;
     private float _cooldown = 0f;
     private float velocity = 0f;
-    private NormalSampler _nsSpeed;
+    private float _flipVelocityChance = 0.5f;
+    private NormalSampler _nsSpeedVariation;
+    private UniformSampler _cooldownSampler;
+    private UniformSampler _randomSampler = new UniformSampler(0, 1);
 
     public void InitPermanentRotation(
         float currentAngle,
-        Vector3 axis,
-        float speed = 22f,
-        float minAngle = -90f,
+        JointConstraint constraint,
+        float minAngle = 0f,
         float maxAngle = 1000f,
-        bool flipAxis = false,
         float delay = 0f,
-        float maxDuration = 1000f)
+        float maxDuration = 1000f
+        )
     {
-        DefaultSpeed = speed;
-        Delay = delay;
-        MaxDuration = maxDuration;
-        MaxAngle = maxAngle;
-        MinAngle = minAngle;
-        Axis = axis;
-        FlipAxis = flipAxis;
+        _defaultSpeed = constraint.SpeedSampler.Sample();
+        _delay = delay;
+        _maxDuration = maxDuration;
+        _minAngle = minAngle; // constraint.MinimumRotation;
+        _maxAngle = maxAngle; // constraint.MaximumRotation;
+        _axis = constraint.Axis;
+        _flipVelocityChance = constraint.FlipVelocityChance;
         _currentAngle = currentAngle;
-        _nsSpeed = new NormalSampler(0.1f, 1.5f, 1f, 0.5f);
-        velocity = DefaultSpeed * _nsSpeed.Sample();
+        _cooldownChance = constraint.CooldownChance;
+        _cooldownSampler = constraint.CooldownDuration;
+        _nsSpeedVariation = constraint.SpeedVariationSampler; //new NormalSampler(0.1f, 1.5f, 1f, 0.5f);
+        velocity = _defaultSpeed * _nsSpeedVariation.Sample();
     }
 
     public void ResetTimer()
@@ -56,28 +61,28 @@ public class PermanentRotation : MonoBehaviour
         _cooldown -= Time.deltaTime;
 
         if (_cooldown > 0) return;
-
-        if (Random.value < 0.005f)
+        
+        if (_randomSampler.Sample() < _cooldownChance)
         {
-            _cooldown = Random.Range(0f, 2f);
-            if (Random.value < 0.5f)
+            _cooldown = _cooldownSampler.Sample();
+            if (_randomSampler.Sample() < _flipVelocityChance)
             {
-                velocity = -1f * Math.Sign(velocity) * DefaultSpeed * _nsSpeed.Sample();
+                velocity = -1f * Math.Sign(velocity) * _defaultSpeed * _nsSpeedVariation.Sample();
             }
         }
 
-        if (_duration > Delay && _duration < MaxDuration)
+        if (_duration > _delay && _duration < _maxDuration)
         {
             float angle = velocity * Time.deltaTime;
             float nextAngle = _currentAngle + angle;
 
-            if (nextAngle >= MaxAngle || nextAngle <= MinAngle)
+            if (nextAngle >= _maxAngle || nextAngle <= _minAngle)
             {
-                velocity = -1f * Math.Sign(velocity) * DefaultSpeed * _nsSpeed.Sample();
-                _cooldown = Random.Range(0f, 2f);
+                velocity = -1f * Math.Sign(velocity) * _defaultSpeed * _nsSpeedVariation.Sample();
+                _cooldown = _cooldownSampler.Sample();
             }
 
-            GetComponent<Transform>().Rotate(Axis, angle);
+            GetComponent<Transform>().Rotate(_axis, angle);
             _currentAngle += angle;
         }
     }
