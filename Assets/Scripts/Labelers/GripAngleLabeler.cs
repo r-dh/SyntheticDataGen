@@ -17,7 +17,15 @@ namespace UnityEngine.Perception.GroundTruth
         protected override bool supportsVisualization => false;
 
         public string annotationId = "grip_angle_labeler";
+
+        /// <summary>
+        /// A list of objects which rotations will be tracked.
+        /// </summary>
         public string[] labelsTracked;
+
+        /// <summary>
+        /// The maximum angle between tips for which the tool is considered closed.
+        /// </summary>
         public float maxAngleDegrees = 5;
 
         private AnnotationDefinition gripAngleDef;

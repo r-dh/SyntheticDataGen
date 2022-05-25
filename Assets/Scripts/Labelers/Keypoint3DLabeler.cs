@@ -102,6 +102,9 @@ namespace UnityEngine.Perception.GroundTruth
             }
         }
 
+        /// <summary>
+        /// Process each keypoint and extract 3D position data.
+        /// </summary>
         void ProcessLabel(Labeling labeledEntity, KeypointTemplate keypointTemplate, ref List<Keypoint3DPosition.Keypoints3D> keypointsMessages)
         {
             var entityGameObject = labeledEntity.gameObject;

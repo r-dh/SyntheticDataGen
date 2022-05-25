@@ -5,6 +5,9 @@ using UnityEngine;
 using UnityEngine.Perception.Randomization.Samplers;
 using Random = UnityEngine.Random;
 
+/// <summary>
+/// Moves gameobject constantly within certain constraints.
+/// </summary>
 public class RandomMovement : MonoBehaviour
 {
     public float DefaultSpeed = 5f;
