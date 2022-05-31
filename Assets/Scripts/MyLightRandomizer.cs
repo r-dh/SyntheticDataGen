@@ -15,8 +15,6 @@ public class MyLightRandomizer : Randomizer
 
         foreach (var tag in tags)
         {
-            /*var light = tag.GetComponent<Light>();
-            light.intensity = lightIntensityParameter.Sample();*/
             tag.SetIntensity(lightIntensityParameter.Sample());
         }
     }

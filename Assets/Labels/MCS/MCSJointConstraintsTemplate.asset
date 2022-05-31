@@ -51,8 +51,8 @@ MonoBehaviour:
     isTip2: 0
   - Name: B_Hinge_01
     Axis: {x: 0, y: 0, z: 1}
-    MinimumRotation: -80
-    MaximumRotation: 80
+    MinimumRotation: -30
+    MaximumRotation: 30
     SpeedSampler:
       mean: 25
       standardDeviation: 0.5

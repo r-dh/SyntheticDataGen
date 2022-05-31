@@ -55,38 +55,19 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
         public JointConstraintsTemplate jointConstrains;
 
 
-        /// <summary>
-        /// The list of prefabs sample and randomly place
-        /// </summary>
-        [Tooltip("The minimum and maximum amount of instruments in the frame.")]
-        public Vector2 objectRange;
+        private GameObject m_Container;
+        private GameObjectOneWayCache m_GameObjectOneWayCache;
 
-        /// <summary>
-        /// The needle to place
-        /// </summary>
-        //[Tooltip("The needle to be placed by this Randomizer.")]
-        //public GameObjectParameter needlePrefab;
+        private UniformSampler _uniformSampler;
 
-
-        /// <summary>
-        /// The amount of images without instruments
-        /// </summary>
-        [Tooltip("Percentage between 0 and 1 of images without any foreground objects.")]
-        public float negativeSamples;
-
-        GameObject m_Container;
-        GameObjectOneWayCache m_GameObjectOneWayCache;
-
-        private UniformSampler uniformSampler;
-
-        private Dictionary<string, Quaternion> initialRotations = new Dictionary<string, Quaternion>();
-        private List<PermanentRotation> animatedRotations = new List<PermanentRotation>();
-        private List<GameObject> tools = new List<GameObject>();
-        private Dictionary<string, JointConstraint> jcDict = new Dictionary<string, JointConstraint>(); // Not ordered, could lead to future bugs
+        private Dictionary<string, Quaternion> _initialRotations = new Dictionary<string, Quaternion>();
+        private List<PermanentRotation> _animatedRotations = new List<PermanentRotation>();
+        private List<GameObject> _tools = new List<GameObject>();
+        private Dictionary<string, JointConstraint> _jcDict = new Dictionary<string, JointConstraint>(); // Not ordered, could lead to future bugs
         /// <inheritdoc/>
         protected override void OnAwake()
         {
-            uniformSampler = new UniformSampler(0.0f, depthVariation);
+            _uniformSampler = new UniformSampler(0.0f, depthVariation);
 
             m_Container = new GameObject("Foreground Objects");
             m_Container.transform.parent = scenario.transform;
@@ -96,7 +77,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
 
             foreach (var constraint in jointConstrains.constraints)
             {
-                jcDict.Add(constraint.Name, constraint);
+                _jcDict.Add(constraint.Name, constraint);
             }
         }
 
@@ -138,20 +119,20 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 float max = Math.Max(sample.x * 0.9f, sample.x * 1.1f) + offset.x;
 
                 rm.Init(new float2(min, max), new float2(placementArea.y * -0.5f, placementArea.y * 0.5f));
-                tools.Add(instance);
+                _tools.Add(instance);
 
                 float tip1 = 0f, tip2 = 0f, centerpoint = 0f;
 
                 foreach (var hinge in instance.GetComponentsInChildren<Transform>())
                 {
                     // TODO: check if this is in order
-                    if (jcDict.ContainsKey(hinge.name))
+                    if (_jcDict.ContainsKey(hinge.name))
                     {
-                        var constraint = jcDict[hinge.name];
+                        var constraint = _jcDict[hinge.name];
                         var rotationSampler = new UniformSampler(constraint.MinimumRotation, constraint.MaximumRotation);
                         var initialOffset = rotationSampler.Sample();
                         
-                        initialRotations.Add($"{instance.name}_{hinge.name}", hinge.localRotation);
+                        _initialRotations.Add($"{instance.name}_{hinge.name}", hinge.localRotation);
 
                         if (!constraint.isTip2)
                         {
@@ -173,7 +154,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                             pr.InitPermanentRotation(initialOffset, constraint, constraint.MinimumRotation, constraint.MaximumRotation);
                         }
 
-                        animatedRotations.Add(pr);
+                        _animatedRotations.Add(pr);
                     }
                 }
             }
@@ -183,22 +164,22 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
         /// </summary>
         private void RevertRotationInstruments()
         {
-            for (int i = 0; i < tools.Count(); i++)
+            for (int i = 0; i < _tools.Count(); i++)
             {
-                var instance = tools[i];
+                var instance = _tools[i];
 
                 foreach (var hinge in instance.GetComponentsInChildren<Transform>())
                 {
-                    if (initialRotations.ContainsKey($"{instance.name}_{hinge.name}"))
+                    if (_initialRotations.ContainsKey($"{instance.name}_{hinge.name}"))
                     {
-                        hinge.localRotation = initialRotations[$"{instance.name}_{hinge.name}"];
+                        hinge.localRotation = _initialRotations[$"{instance.name}_{hinge.name}"];
                     }
                 }
 
             }
 
-            tools.Clear();
-            initialRotations.Clear();
+            _tools.Clear();
+            _initialRotations.Clear();
         }
 
         /// <summary>
@@ -215,7 +196,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 50);
 
             var offset = new Vector3(placementArea.x, placementArea.y, 0f) * -0.5f;
-            offset.z = uniformSampler.Sample() * -1f;
+            offset.z = _uniformSampler.Sample() * -1f;
 
             var (left, right) = GenerateLocationsInstruments(ref placementSamples);
 
@@ -230,11 +211,11 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
         protected override void OnIterationEnd()
         {
             RevertRotationInstruments();
-            foreach (var permanentRotation in animatedRotations)
+            foreach (var permanentRotation in _animatedRotations)
             {
                 Object.Destroy(permanentRotation);
             }
-            animatedRotations.Clear();
+            _animatedRotations.Clear();
             m_GameObjectOneWayCache.ResetAllObjects();
         }
     }

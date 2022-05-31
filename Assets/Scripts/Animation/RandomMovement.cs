@@ -14,7 +14,7 @@ public class RandomMovement : MonoBehaviour
 
     private float _cooldown = 0f;
 
-    private float velocity = 0f;
+    private float _currentSpeed = 0f;
     Vector3 _targetPos;
 
     private NormalSampler _nsSpeed;
@@ -28,7 +28,7 @@ public class RandomMovement : MonoBehaviour
     {
         DefaultSpeed = speed;
         _nsSpeed = new NormalSampler(0.1f, 1.5f, 1f, 1f, true, 0.1f, 1.5f);
-        velocity = DefaultSpeed * _nsSpeed.Sample(); 
+        _currentSpeed = DefaultSpeed * _nsSpeed.Sample(); 
         _horizontalSampler = new NormalSampler(horizontalBounds.x, horizontalBounds.y, (horizontalBounds.x + horizontalBounds.y)/2, 1f);
         _verticalSampler = new NormalSampler(verticalBounds.x, verticalBounds.y, (verticalBounds.x + verticalBounds.y) / 2, 2f);
         _targetPos = GetNewTargetPos();
@@ -52,12 +52,12 @@ public class RandomMovement : MonoBehaviour
         {
             _cooldown = Random.Range(0.1f, 2f);
             _targetPos = GetNewTargetPos();
-            velocity = DefaultSpeed * _nsSpeed.Sample();
+            _currentSpeed = DefaultSpeed * _nsSpeed.Sample();
             return;
         }
 
-        Vector3 deltaDisplacement = (_targetPos - localPos).normalized * velocity * Time.deltaTime;
-        deltaDisplacement.z = 0f;
-        GetComponent<Transform>().Translate(deltaDisplacement, Space.World);
+        Vector3 instVelocity = (_targetPos - localPos).normalized * _currentSpeed * Time.deltaTime;
+        instVelocity.z = 0f;
+        GetComponent<Transform>().Translate(instVelocity, Space.World);
     }
 }

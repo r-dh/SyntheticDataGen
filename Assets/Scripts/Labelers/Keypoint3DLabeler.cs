@@ -37,7 +37,6 @@ namespace UnityEngine.Perception.GroundTruth
         [Serializable]
         class Keypoint3DPosition : Annotation
         {
-            //public string ToolName;
             public Keypoints3D[] keypoints3DList;
 
             public Keypoint3DPosition(

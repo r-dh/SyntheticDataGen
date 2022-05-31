@@ -20,11 +20,11 @@ public class PermanentRotation : MonoBehaviour
     private float _duration = 0f;
     private float _currentAngle = 0f;
     private float _cooldown = 0f;
-    private float velocity = 0f;
+    private float _velocity = 0f;
     private float _flipVelocityChance = 0.5f;
-    private NormalSampler _nsSpeedVariation;
+    private NormalSampler _nsSpeedVariation; //new NormalSampler(0.1f, 1.5f, 1f, 0.5f);
     private UniformSampler _cooldownSampler;
-    private UniformSampler _randomSampler = new UniformSampler(0, 1);
+    private readonly UniformSampler _randomSampler = new UniformSampler(0, 1);
 
     public void InitPermanentRotation(
         float currentAngle,
@@ -38,15 +38,15 @@ public class PermanentRotation : MonoBehaviour
         _defaultSpeed = constraint.SpeedSampler.Sample();
         _delay = delay;
         _maxDuration = maxDuration;
-        _minAngle = minAngle; // constraint.MinimumRotation;
-        _maxAngle = maxAngle; // constraint.MaximumRotation;
+        _minAngle = minAngle; 
+        _maxAngle = maxAngle; 
         _axis = constraint.Axis;
         _flipVelocityChance = constraint.FlipVelocityChance;
         _currentAngle = currentAngle;
         _cooldownChance = constraint.CooldownChance;
         _cooldownSampler = constraint.CooldownDuration;
-        _nsSpeedVariation = constraint.SpeedVariationSampler; //new NormalSampler(0.1f, 1.5f, 1f, 0.5f);
-        velocity = _defaultSpeed * _nsSpeedVariation.Sample();
+        _nsSpeedVariation = constraint.SpeedVariationSampler; 
+        _velocity = _defaultSpeed * _nsSpeedVariation.Sample();
     }
 
     public void ResetTimer()
@@ -54,7 +54,6 @@ public class PermanentRotation : MonoBehaviour
         _duration = 0f;
     }
 
-    // Update is called once per frame
     void Update()
     {
         _duration += Time.deltaTime;
@@ -67,18 +66,18 @@ public class PermanentRotation : MonoBehaviour
             _cooldown = _cooldownSampler.Sample();
             if (_randomSampler.Sample() < _flipVelocityChance)
             {
-                velocity = -1f * Math.Sign(velocity) * _defaultSpeed * _nsSpeedVariation.Sample();
+                _velocity = -1f * Math.Sign(_velocity) * _defaultSpeed * _nsSpeedVariation.Sample();
             }
         }
 
         if (_duration > _delay && _duration < _maxDuration)
         {
-            float angle = velocity * Time.deltaTime;
+            float angle = _velocity * Time.deltaTime;
             float nextAngle = _currentAngle + angle;
 
             if (nextAngle >= _maxAngle || nextAngle <= _minAngle)
             {
-                velocity = -1f * Math.Sign(velocity) * _defaultSpeed * _nsSpeedVariation.Sample();
+                _velocity = -1f * Math.Sign(_velocity) * _defaultSpeed * _nsSpeedVariation.Sample();
                 _cooldown = _cooldownSampler.Sample();
             }
 

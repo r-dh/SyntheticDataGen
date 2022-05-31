@@ -60,11 +60,11 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
         GameObject m_Container;
         GameObjectOneWayCache m_GameObjectOneWayCache;
 
-        private UniformSampler uniformSampler;
+        private UniformSampler _uniformSampler;
         /// <inheritdoc/>
         protected override void OnAwake()
         {
-            uniformSampler = new UniformSampler(0.0f, depthVariation);
+            _uniformSampler = new UniformSampler(0.0f, depthVariation);
 
             m_Container = new GameObject("Needles");
             m_Container.transform.parent = scenario.transform;
@@ -75,7 +75,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
 
         private (float2 left, float2 right) GenerateLocationsNeedles(ref NativeList<float2> placementSamples)
         {
-            // We expect only two instruments, so we keep the leftmost and rightmost point
+            // We expect only two needles, so we keep the leftmost and rightmost point
             if (prefabs.GetCategoryCount() != 2)
             {
                 throw new NotImplementedException(
@@ -108,7 +108,7 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
                 30);
 
             var offset = new Vector3(placementArea.x, placementArea.y, 0f) * -0.5f;
-            offset.z = uniformSampler.Sample() * -1f;
+            offset.z = _uniformSampler.Sample() * -1f;
 
             // ON HOLD: sort generated samples by x coordinate, split resulting list in needleCount parts and sample each location from the resulting partial lists
             // ON HOLD: (Perception v0.8) This gives an error, GetEnumerator() hasn't been implemented by NativeList

@@ -21,5 +21,9 @@ MonoBehaviour:
     id: 3
   - label: FenestratedBipolarForceps_L
     id: 4
+  - label: MonopolarCurvedScissors_L
+    id: 5
+  - label: MonopolarCurvedScissors_R
+    id: 6
   autoAssignIds: 1
   startingLabelId: 1
