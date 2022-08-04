@@ -123,6 +123,8 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
 
                 float tip1 = 0f, tip2 = 0f, centerpoint = 0f;
 
+                _initialRotations.Add(instance.name, instance.transform.localRotation);
+
                 foreach (var hinge in instance.GetComponentsInChildren<Transform>())
                 {
                     // TODO: check if this is in order
@@ -168,14 +170,20 @@ namespace UnityEngine.Perception.Randomization.Randomizers.SampleRandomizers
             {
                 var instance = _tools[i];
 
-                foreach (var hinge in instance.GetComponentsInChildren<Transform>())
+                if (_initialRotations.ContainsKey(instance.name)) // Root object is not included in GetComponentsInChildren
                 {
-                    if (_initialRotations.ContainsKey($"{instance.name}_{hinge.name}"))
-                    {
-                        hinge.localRotation = _initialRotations[$"{instance.name}_{hinge.name}"];
-                    }
+                    instance.transform.localRotation = _initialRotations[instance.name];
                 }
 
+                foreach (var hinge in instance.GetComponentsInChildren<Transform>())
+                {
+                    string rotationKey = $"{instance.name}_{hinge.name}";
+                    if (_initialRotations.ContainsKey(rotationKey))
+                    {
+                        hinge.localRotation = _initialRotations[rotationKey];
+                    }
+                }
+                Object.Destroy(instance.GetComponent<RandomMovement>());
             }
 
             _tools.Clear();
